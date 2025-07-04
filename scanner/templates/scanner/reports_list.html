@@ -1,0 +1,159 @@
+{% extends 'scanner/base.html' %}
+
+{% block title %}Scan Reports - Web Vulnerability Scanner{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="mb-0">
+                <i class="fas fa-history me-2"></i>Scan Reports
+            </h1>
+            <a href="{% url 'scanner:scan_form' %}" class="btn btn-primary">
+                <i class="fas fa-search me-2"></i>New Scan
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h5 class="mb-0"><i class="fas fa-list me-2"></i>All Reports</h5>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <input type="text" id="report-search" class="form-control" placeholder="Search reports...">
+                            <button class="btn btn-outline-secondary" type="button">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Target</th>
+                                <th>Scan Date</th>
+                                <th>Status</th>
+                                <th>Findings</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in reports %}
+                            <tr>
+                                <td>#{{ report.id }}</td>
+                                <td>
+                                    {% if report.url %}
+                                    <a href="{{ report.url }}" target="_blank" class="text-truncate d-inline-block" style="max-width: 300px;" title="{{ report.url }}">
+                                        {{ report.url }}
+                                    </a>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Code Snippet</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ report.scan_date|date:"M d, Y H:i" }}</td>
+                                <td>
+                                    {% if report.status == 'COMPLETED' %}
+                                    <span class="badge bg-success">Completed</span>
+                                    {% elif report.status == 'PENDING' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                    {% elif report.status == 'IN_PROGRESS' %}
+                                    <span class="badge bg-info">In Progress</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Failed</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ report.vulnerabilities.count }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="{% url 'scanner:report_detail' report.id %}" class="btn btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-outline-danger delete-report" 
+                                            data-bs-toggle="modal" data-bs-target="#deleteReportModal" 
+                                            data-report-id="{{ report.id }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center p-4">
+                                    <p class="text-muted mb-0">No scan reports available</p>
+                                    <a href="{% url 'scanner:scan_form' %}" class="btn btn-sm btn-outline-primary mt-2">
+                                        Start your first scan
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Report Confirmation Modal -->
+<div class="modal fade" id="deleteReportModal" tabindex="-1" aria-labelledby="deleteReportModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteReportModalLabel">Delete Report</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this scan report? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a href="#" id="confirmDelete" class="btn btn-danger">Delete Report</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Setup report search functionality
+        const searchInput = document.getElementById('report-search');
+        const tableRows = document.querySelectorAll('tbody tr');
+        
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            tableRows.forEach(row => {
+                const target = row.cells[1].textContent.toLowerCase();
+                if (target.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+        
+        // Setup delete report modal
+        const deleteButtons = document.querySelectorAll('.delete-report');
+        const confirmDeleteButton = document.getElementById('confirmDelete');
+        
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const reportId = this.getAttribute('data-report-id');
+                confirmDeleteButton.href = `{% url 'scanner:delete_report' 0 %}`.replace('0', reportId);
+            });
+        });
+    });
+</script>
+{% endblock %}

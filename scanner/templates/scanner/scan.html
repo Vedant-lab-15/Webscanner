@@ -1,0 +1,212 @@
+{% extends 'scanner/base.html' %}
+
+{% block title %}Scan for Vulnerabilities - Web Vulnerability Scanner{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="card shadow-lg border-0">
+            <div class="card-body p-5">
+                <h1 class="text-center mb-4">
+                    <i class="fas fa-search text-primary me-2"></i>
+                    Vulnerability Scanner
+                </h1>
+                
+                <p class="lead text-center mb-4">
+                    Scan a website URL or analyze a code snippet for common web vulnerabilities
+                </p>
+
+                <div class="row">
+                    <div class="col-md-10 mx-auto">
+                        <ul class="nav nav-tabs" id="scanTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="url-tab" data-bs-toggle="tab" data-bs-target="#url-content" 
+                                    type="button" role="tab" aria-controls="url-content" aria-selected="true">
+                                    <i class="fas fa-globe me-1"></i> URL
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="code-tab" data-bs-toggle="tab" data-bs-target="#code-content" 
+                                    type="button" role="tab" aria-controls="code-content" aria-selected="false">
+                                    <i class="fas fa-code me-1"></i> Code Snippet
+                                </button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content bg-white p-4 border border-top-0 rounded-bottom" id="scanTabContent">
+                            <div class="tab-pane fade show active" id="url-content" role="tabpanel" aria-labelledby="url-tab">
+                                <form action="{% url 'scanner:submit_scan' %}" method="post">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label for="url" class="form-label">Website URL</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-link"></i></span>
+                                            <input type="url" class="form-control" id="url" name="url" 
+                                                placeholder="https://example.com" required>
+                                        </div>
+                                        <div class="form-text">
+                                            Enter a complete URL including the protocol (http:// or https://)
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="deep_scan" name="deep_scan">
+                                            <label class="form-check-label" for="deep_scan">
+                                                Enable deep scan (analyzes forms and linked pages)
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary btn-lg">
+                                            <i class="fas fa-search me-2"></i>Scan URL
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                            
+                            <div class="tab-pane fade" id="code-content" role="tabpanel" aria-labelledby="code-tab">
+                                <form action="{% url 'scanner:submit_scan' %}" method="post">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label for="code_snippet" class="form-label">HTML/JavaScript/PHP Code</label>
+                                        <textarea class="form-control code-editor" id="code_snippet" name="code_snippet" 
+                                            rows="10" placeholder="Paste your code here..." required></textarea>
+                                        <div class="form-text">
+                                            Paste the code you want to analyze for vulnerabilities
+                                        </div>
+                                    </div>
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary btn-lg">
+                                            <i class="fas fa-search me-2"></i>Analyze Code
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-lg-10 mx-auto">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">What We Scan For</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <span class="badge rounded-pill bg-danger p-2">
+                                    <i class="fas fa-bug fa-lg"></i>
+                                </span>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5>Cross-Site Scripting (XSS)</h5>
+                                <p class="text-muted mb-0">
+                                    Detects malicious script injections that could execute in users' browsers, 
+                                    including stored, reflected, and DOM-based XSS vectors.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <span class="badge rounded-pill bg-danger p-2">
+                                    <i class="fas fa-database fa-lg"></i>
+                                </span>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5>SQL Injection</h5>
+                                <p class="text-muted mb-0">
+                                    Identifies patterns that could allow attackers to execute malicious SQL 
+                                    statements and compromise your database.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-md-0 mb-4">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <span class="badge rounded-pill bg-warning p-2">
+                                    <i class="fas fa-exchange-alt fa-lg"></i>
+                                </span>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5>Cross-Site Request Forgery (CSRF)</h5>
+                                <p class="text-muted mb-0">
+                                    Checks for missing CSRF protections in forms that could allow attackers 
+                                    to execute unwanted actions.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <span class="badge rounded-pill bg-warning p-2">
+                                    <i class="fas fa-eye fa-lg"></i>
+                                </span>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5>Sensitive Data Exposure</h5>
+                                <p class="text-muted mb-0">
+                                    Detects potentially sensitive data like emails, IP addresses, 
+                                    and credentials that might be inadvertently exposed.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .code-editor {
+        font-family: monospace;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Keep the active tab selected after form submission with validation errors
+        const urlTab = document.getElementById('url-tab');
+        const codeTab = document.getElementById('code-tab');
+        const urlContent = document.getElementById('url-content');
+        const codeContent = document.getElementById('code-content');
+        
+        // Check if there was a form submission with errors
+        const urlInput = document.getElementById('url');
+        const codeSnippet = document.getElementById('code_snippet');
+        
+        if (urlInput.value.trim() !== '') {
+            urlTab.classList.add('active');
+            urlTab.setAttribute('aria-selected', 'true');
+            urlContent.classList.add('show', 'active');
+            codeTab.classList.remove('active');
+            codeTab.setAttribute('aria-selected', 'false');
+            codeContent.classList.remove('show', 'active');
+        } else if (codeSnippet.value.trim() !== '') {
+            codeTab.classList.add('active');
+            codeTab.setAttribute('aria-selected', 'true');
+            codeContent.classList.add('show', 'active');
+            urlTab.classList.remove('active');
+            urlTab.setAttribute('aria-selected', 'false');
+            urlContent.classList.remove('show', 'active');
+        }
+    });
+</script>
+{% endblock %}

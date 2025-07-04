@@ -1,0 +1,249 @@
+{% extends 'scanner/base.html' %}
+
+{% block title %}Security Dashboard - Web Vulnerability Scanner{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="mb-0"><i class="fas fa-tachometer-alt me-2"></i> Security Dashboard</h1>
+            <a href="{% url 'scanner:scan_form' %}" class="btn btn-primary">
+                <i class="fas fa-search me-2"></i>New Scan
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3 mb-4 mb-md-0">
+        <div class="card h-100 border-primary shadow-sm">
+            <div class="card-body text-center">
+                <h2 class="display-4 text-primary mb-0">{{ severity_counts.CRITICAL|default:"0" }}</h2>
+                <p class="text-uppercase fw-bold text-danger">Critical</p>
+                <div class="progress mt-2">
+                    <div class="progress-bar bg-danger" style="width: 100%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4 mb-md-0">
+        <div class="card h-100 border-warning shadow-sm">
+            <div class="card-body text-center">
+                <h2 class="display-4 text-warning mb-0">{{ severity_counts.HIGH|default:"0" }}</h2>
+                <p class="text-uppercase fw-bold text-warning">High</p>
+                <div class="progress mt-2">
+                    <div class="progress-bar bg-warning" style="width: 100%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4 mb-md-0">
+        <div class="card h-100 border-info shadow-sm">
+            <div class="card-body text-center">
+                <h2 class="display-4 text-info mb-0">{{ severity_counts.MEDIUM|default:"0" }}</h2>
+                <p class="text-uppercase fw-bold text-info">Medium</p>
+                <div class="progress mt-2">
+                    <div class="progress-bar bg-info" style="width: 100%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100 border-success shadow-sm">
+            <div class="card-body text-center">
+                <h2 class="display-4 text-success mb-0">{{ severity_counts.LOW|default:"0" }}</h2>
+                <p class="text-uppercase fw-bold text-success">Low</p>
+                <div class="progress mt-2">
+                    <div class="progress-bar bg-success" style="width: 100%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Vulnerability Distribution</h5>
+                <div class="btn-group btn-group-sm" role="group">
+                    <button type="button" class="btn btn-outline-secondary active">All Time</button>
+                    <button type="button" class="btn btn-outline-secondary">This Month</button>
+                    <button type="button" class="btn btn-outline-secondary">This Week</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    {% if vulnerability_stats %}
+                    <canvas id="vulnerabilityChart" height="300"></canvas>
+                    {% else %}
+                    <div class="text-center p-5">
+                        <p class="text-muted mb-0">No vulnerability data available yet</p>
+                        <p class="small text-muted">Run your first scan to see statistics</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Top Vulnerabilities</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for stat in vulnerability_stats|slice:":5" %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-0">{{ stat.vulnerability_type__name }}</h6>
+                            <span class="badge 
+                                {% if stat.vulnerability_type__severity == 'CRITICAL' %}bg-danger
+                                {% elif stat.vulnerability_type__severity == 'HIGH' %}bg-warning
+                                {% elif stat.vulnerability_type__severity == 'MEDIUM' %}bg-info
+                                {% else %}bg-success{% endif %}">
+                                {{ stat.vulnerability_type__severity }}
+                            </span>
+                        </div>
+                        <span class="badge bg-secondary rounded-pill">{{ stat.count }}</span>
+                    </div>
+                    {% empty %}
+                    <div class="list-group-item text-center p-4">
+                        <p class="text-muted mb-0">No vulnerabilities detected yet</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Scan Activity</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Target</th>
+                                <th>Scan Date</th>
+                                <th>Status</th>
+                                <th>Findings</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in recent_reports %}
+                            <tr>
+                                <td>#{{ report.id }}</td>
+                                <td>
+                                    {% if report.url %}
+                                    <a href="{{ report.url }}" target="_blank" class="text-truncate d-inline-block" style="max-width: 300px;" title="{{ report.url }}">
+                                        {{ report.url }}
+                                    </a>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Code Snippet</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ report.scan_date|date:"M d, Y H:i" }}</td>
+                                <td>
+                                    {% if report.status == 'COMPLETED' %}
+                                    <span class="badge bg-success">Completed</span>
+                                    {% elif report.status == 'PENDING' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                    {% elif report.status == 'IN_PROGRESS' %}
+                                    <span class="badge bg-info">In Progress</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Failed</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ report.vulnerabilities.count }}</td>
+                                <td>
+                                    <a href="{% url 'scanner:report_detail' report.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center p-4">
+                                    <p class="text-muted mb-0">No scan reports available</p>
+                                    <a href="{% url 'scanner:scan_form' %}" class="btn btn-sm btn-outline-primary mt-2">
+                                        Start your first scan
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        {% if vulnerability_stats %}
+        const ctx = document.getElementById('vulnerabilityChart').getContext('2d');
+        const vulnerabilityData = [
+            {% for stat in vulnerability_stats %}
+            { 
+                name: "{{ stat.vulnerability_type__name }}", 
+                count: {{ stat.count }},
+                severity: "{{ stat.vulnerability_type__severity }}"
+            },
+            {% endfor %}
+        ];
+        
+        // Prepare chart data
+        const labels = vulnerabilityData.map(item => item.name);
+        const counts = vulnerabilityData.map(item => item.count);
+        const backgroundColors = vulnerabilityData.map(item => {
+            switch(item.severity) {
+                case 'CRITICAL': return 'rgba(220, 53, 69, 0.7)';  // Danger
+                case 'HIGH': return 'rgba(255, 193, 7, 0.7)';      // Warning
+                case 'MEDIUM': return 'rgba(23, 162, 184, 0.7)';   // Info
+                case 'LOW': return 'rgba(40, 167, 69, 0.7)';       // Success
+                default: return 'rgba(108, 117, 125, 0.7)';        // Secondary
+            }
+        });
+        
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Vulnerabilities',
+                    data: counts,
+                    backgroundColor: backgroundColors,
+                    borderColor: backgroundColors.map(color => color.replace('0.7', '1')),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+        {% endif %}
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,143 @@
+/* Custom styles for Web Vulnerability Scanner */
+
+/* Global styles */
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f5f8fa;
+    color: #333;
+}
+
+/* Navbar customization */
+.navbar {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+/* Cards */
+.card {
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.card-header {
+    font-weight: 600;
+}
+
+.card:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+/* Feature cards */
+.feature-icon {
+    margin-bottom: 1.5rem;
+}
+
+/* Form elements */
+.form-control:focus, .btn:focus {
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.input-group-text {
+    background-color: #f8f9fa;
+}
+
+/* Code blocks */
+pre.code-block {
+    background-color: #f8f9fa;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    padding: 1rem;
+    font-size: 0.9rem;
+}
+
+/* Vulnerability specific */
+.vulnerability-item {
+    transition: all 0.2s ease;
+    border-left-width: 4px;
+}
+
+.vulnerability-item:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Severity indicator styling */
+.vulnerability-item.critical {
+    border-left-color: #dc3545;
+}
+
+.vulnerability-item.high {
+    border-left-color: #ffc107;
+}
+
+.vulnerability-item.medium {
+    border-left-color: #17a2b8;
+}
+
+.vulnerability-item.low {
+    border-left-color: #28a745;
+}
+
+/* Footer */
+.footer {
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Animations */
+.fade-in {
+    animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Dashboard specific */
+.step-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin: 0 auto 1rem;
+    background-color: #f8f9fa;
+    color: #007bff;
+    border: 2px solid #007bff;
+    font-weight: 600;
+}
+
+/* Responsive font sizes */
+@media (max-width: 768px) {
+    h1.display-4 {
+        font-size: 2.5rem;
+    }
+    .lead {
+        font-size: 1.1rem;
+    }
+}
+
+/* Table hover effect */
+.table-hover tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+/* Progress bars */
+.progress {
+    height: 8px;
+    margin-top: 0.5rem;
+    border-radius: 4px;
+}
+
+/* Badge styling */
+.badge {
+    font-weight: 500;
+    padding: 0.35em 0.65em;
+    border-radius: 4px;
+}
